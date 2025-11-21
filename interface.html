@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="auto">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeHouse – Interface Web (mise à jour, avec sidebar)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================
+       Design system + thème
+       ========================= */
+    :root {
+      --bg-main: #050b14;
+      --bg-panel: #131b27;
+      --bg-panel-soft: #1a2432;
+      --accent: #35c66b;
+      --accent-yellow: #facc15;
+      --accent-orange: #f97316;
+      --danger: #ff4b5c;
+      --text-main: #f9fafb;
+      --text-soft: #9ca3af;
+      --muted: #4b5563;
+      --outline: rgba(148,163,184,0.18);
+      --radius-lg: 20px;
+      --radius-xl: 26px;
+      --shadow-soft: 0 30px 70px rgba(0,0,0,0.6);
+      --transition-fast: 0.18s ease-out;
+    }
+
+    html[data-theme="dark"] {
+      --bg-panel: #131b27;
+      --bg-panel-soft: #1a2432;
+      --text-main: #f9fafb;
+      --text-soft: #9ca3af;
+      --outline: rgba(148,163,184,0.18);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at top left, #1a2944 0, #050b14 45%, #020617 100%);
+      color: var(--text-main);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+
+    /* =========================
+       TOASTS
+       ========================= */
+    .toasts {
+      position: fixed; bottom: 20px; right: 20px; z-index: 50;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .toast {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; border-radius: 12px;
+      background: #020617;
+      color: var(--text-main);
+      border: 1px solid var(--outline);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.6);
+      font-size: 12px; min-width: 220px;
+    }
+    .toast.success { border-color: rgba(22,163,74,0.6); }
+    .toast.info { border-color: rgba(59,130,246,0.6); }
+    .toast.danger { border-color: rgba(239,68,68,0.6); }
+
+    /* =========================
+       ÉCRAN DE LOGIN
+       ========================= */
+    .auth-wrapper {
+      width: 100%; max-width: 420px;
+      background: rgba(4,9,18,0.96);
+      border-radius: 30px;
+      padding: 26px 24px 22px;
+      box-shadow: var(--shadow-soft);
+      display: none;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--outline);
+    }
+
+    .auth-wrapper::before {
+      content: ""; position: absolute;
+      width: 220px; height: 220px; border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, rgba(250,204,21,0.25), transparent 65%);
+      top: -80px; right: -110px;
+    }
+
+    .auth-header { position: relative; margin-bottom: 18px; }
+    .auth-title { font-size: 20px; font-weight: 600; color: #e5e7eb; }
+    .auth-subtitle { margin-top: 4px; font-size: 13px; color: var(--text-soft); }
+
+    .auth-badge {
+      margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; border-radius: 999px;
+      background: rgba(16,185,129,0.12);
+      color: #a7f3d0; font-size: 11px;
+    }
+    .auth-badge-dot {
+      width: 8px; height: 8px; border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .auth-form {
+      position: relative;
+      display: flex; flex-direction: column;
+      gap: 10px; margin-top: 10px;
+    }
+    .auth-label {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-main); margin-bottom: 2px;
+    }
+    .auth-field { position: relative; }
+
+    .auth-input {
+      width: 100%; border-radius: 14px;
+      border: 1px solid rgba(148,163,184,0.6);
+      padding: 9px 11px; font-size: 13px;
+      outline: none;
+      transition: border var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+      background: rgba(15,23,42,0.9);
+      color: var(--text-main);
+    }
+    .auth-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(53,198,107,0.45);
+      background: #020617;
+    }
+
+    .eye-btn {
+      position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%);
+      background: transparent; border: 0; cursor: pointer;
+      font-size: 14px; color: var(--text-soft);
+    }
+
+    .auth-footer-row {
+      display: flex; justify-content: space-between;
+      align-items: center; gap: 8px; margin-top: 4px;
+    }
+    .auth-remember {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--text-soft);
+      cursor: pointer; user-select: none;
+    }
+    .auth-checkbox {
+      width: 14px; height: 14px; border-radius: 4px;
+      border: 1px solid rgba(148,163,184,0.9);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--accent);
+    }
+
+    .auth-link {
+      font-size: 11px; color: #93c5fd;
+      text-decoration: underline; cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .auth-button {
+      margin-top: 12px;
+      width: 100%; border: none; border-radius: 999px;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, #35c66b, #facc15);
+      color: #020617; font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(34,197,94,0.6);
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+    }
+    .auth-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(34,197,94,0.8);
+    }
+    .auth-button:active {
+      transform: translateY(0);
+      box-shadow: 0 12px 24px rgba(34,197,94,0.7);
+    }
+
+    .auth-hint {
+      margin-top: 10px; font-size: 11px;
+      color: var(--text-soft);
+      background: rgba(15,23,42,0.85);
+      border-radius: 12px;
+      padding: 8px 9px;
+    }
+    .auth-hint code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      padding: 1px 4px;
+      background: #020617;
+      border-radius: 6px;
+      color: #e5e7eb;
+    }
+
+    .auth-error {
+      margin-top: 8px; font-size: 11px;
+      color: var(--danger);
+      display: none;
+    }
+
+    /* =========================
+       APP SHELL (sidebar + main)
+       ========================= */
+    .app {
+      max-width: 1200px;
+      width: 100%;
+      display: none;      /* contrôlé par JS */
+    }
+
+    .app-shell {
+      width: 100%;
+      height: 640px;
+      background: radial-gradient(circle at top left, #202b3f 0, #050b14 45%, #050b14 100%);
+      border-radius: 32px;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.18);
+    }
+
+    /* ====== Sidebar ====== */
+    .sidebar {
+      background: rgba(4,9,18,0.9);
+      border-right: 1px solid rgba(148,163,184,0.18);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 0;
+      gap: 24px;
+    }
+
+    /* LOGO SAFEHOUSE */
+    .logo {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: transparent;
+      padding: 0;
+    }
+
+    .logo img {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    .side-nav {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .side-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 0;
+      background: transparent;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .side-btn.active {
+      background: rgba(15,118,110,0.15);
+      color: var(--text-main);
+      position: relative;
+    }
+    .side-btn.active::before {
+      content: "";
+      position: absolute;
+      left: -2px;
+      width: 3px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .side-separator {
+      width: 26px;
+      height: 1px;
+      margin-top: 6px;
+      background: radial-gradient(circle, rgba(148,163,184,0.6), transparent);
+    }
+
+    .side-bottom {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ====== Main area ====== */
+    .main {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      padding: 18px 22px;
+      gap: 16px;
+      position: relative;
+    }
+
+    /* Topbar (tabs + actions) */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .tabs {
+      display: inline-flex;
+      background: rgba(15,23,42,0.85);
+      border-radius: 999px;
+      padding: 4px;
+      border: 1px solid rgba(148,163,184,0.35);
+      box-shadow: 0 12px 26px rgba(0,0,0,0.4);
+    }
+
+    .tab {
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 12px;
+      color: var(--text-soft);
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      background: #f9fafb;
+      color: #111827;
+      box-shadow: 0 8px 20px rgba(15,23,42,0.4);
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--outline);
+      background: rgba(15,23,42,0.85);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .btn {
+      font-size: 12px;
+      border: 1px solid var(--outline);
+      background: rgba(15,23,42,0.9);
+      color: var(--text-main);
+      border-radius: 999px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .btn:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.5); }
+
+    .btn.danger {
+      border-color: rgba(239,68,68,0.6);
+      color: #fef2f2;
+      background: linear-gradient(135deg,#f97373,#ef4444);
+    }
+
+    /* CONTENT GRID */
+    main {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .house-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .phone-column {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ===== Greeting / header recasé ===== */
+    .greeting-card {
+      background: linear-gradient(135deg, rgba(15,23,42,0.94), rgba(15,23,42,0.78));
+      border-radius: var(--radius-xl);
+      padding: 16px 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border: 1px solid rgba(148,163,184,0.22);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.6);
+    }
+
+    .greeting-title {
+      font-size: 14px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .greeting-sub {
+      font-size: 13px;
+      color: var(--text-soft);
+    }
+
+    .greeting-badge {
+      margin-top: 4px;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(55,65,81,0.65);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+    }
+    .greeting-badge span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    /* ===== Maison (illustration) ===== */
+    .house-card {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: radial-gradient(circle at top left, #111827 0, #020617 55%, #020617 100%);
+      padding: 18px;
+      color: #e5e7eb;
+      min-height: 210px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .house-illustration { position: absolute; inset: 0; pointer-events: none; opacity: 0.85; }
+    .house-body {
+      position: absolute;
+      width: 70%; max-width: 420px; height: 46%;
+      bottom: 12%; left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #f97316, #f97316 45%, #b45309 100%);
+      border-radius: 12px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+      overflow: hidden;
+    }
+    .house-roof {
+      position: absolute;
+      width: 102%; height: 26%;
+      left: -1%; top: -18%;
+      background: linear-gradient(135deg, #020617, #111827 65%, #020617 100%);
+      clip-path: polygon(5% 100%, 95% 100%, 70% 0, 30% 0);
+    }
+    .house-garage {
+      position: absolute; left: 4%; bottom: 0;
+      width: 46%; height: 52%; background: #0b1120;
+    }
+    .garage-door {
+      position: absolute; inset: 18% 10% 12%;
+      border-radius: 8px;
+      background: repeating-linear-gradient(to bottom, #f97316, #f97316 8px, #ea580c 8px, #ea580c 16px);
+    }
+    .house-main {
+      position: absolute; right: 6%; bottom: 0;
+      width: 58%; height: 62%; background: #111827;
+    }
+    .house-main::before {
+      content: ""; position: absolute; inset: 16% 10% 28%;
+      background: linear-gradient(90deg, #fed7aa 0, #fef3c7 40%, #fee2e2 100%);
+    }
+    .house-main::after {
+      content: ""; position: absolute;
+      left: 10%; bottom: 10%; width: 40%; height: 28%;
+      background: #0f172a;
+    }
+    .house-balcony {
+      position: absolute; right: 6%; top: 32%;
+      width: 58%; height: 16%; background: #e5e7eb;
+    }
+    .house-ground {
+      position: absolute; width: 130%; height: 18%;
+      bottom: 4%; left: -15%;
+      background: linear-gradient(90deg, #020617, #020617 40%, #111827 100%);
+      border-radius: 999px; filter: blur(4px); opacity: 0.7;
+    }
+    .house-caption {
+      position: relative; margin-top: auto; z-index: 1;
+    }
+    .house-caption-title { font-size: 16px; font-weight: 600; }
+    .house-caption-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+
+    /* ===== BUBBLES (nav modules) ===== */
+    .bubbles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+    }
+    .bubble-card {
+      background: linear-gradient(135deg, rgba(19,27,39,0.98), rgba(15,23,42,0.98));
+      border-radius: 22px;
+      padding: 10px 11px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.7);
+      border: 1px solid rgba(148,163,184,0.24);
+      cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+      color: var(--text-main);
+    }
+    .bubble-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.8);
+      background: linear-gradient(135deg, rgba(24,33,48,1), rgba(18,26,40,1));
+    }
+
+    .bubble-icon {
+      width: 38px; height: 38px;
+      border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(53,198,107,0.14);
+      font-size: 20px; flex-shrink: 0;
+    }
+    .bubble-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .bubble-sub { font-size: 11px; color: var(--text-soft); }
+    .bubble-content { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+
+    /* ===== Téléphone ===== */
+    .phone-shell {
+      width: 260px; max-width: 100%;
+      border-radius: 32px;
+      padding: 14px 10px;
+      background: linear-gradient(145deg, #020617, #020617);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.8);
+      position: relative;
+      color: #111827;
+    }
+    .phone-notch {
+      width: 56%; height: 9px;
+      border-radius: 0 0 999px 999px;
+      background: #020617;
+      position: absolute; top: 10px; left: 50%;
+      transform: translateX(-50%);
+    }
+    .phone-screen {
+      background: #020617;
+      border-radius: 24px;
+      padding: 16px 14px 12px;
+      margin-top: 14px;
+      display: flex; flex-direction: column; gap: 12px;
+      min-height: 360px;
+      border: 1px solid rgba(148,163,184,0.35);
+      color: var(--text-main);
+    }
+
+    .phone-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .phone-title { font-size: 14px; font-weight: 600; }
+    .phone-header-sub { font-size: 11px; color: var(--text-soft); }
+
+    .phone-badge {
+      background: rgba(22, 163, 74, 0.16);
+      color: #4ade80;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .phone-badge-dot {
+      width: 7px; height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .phone-tools { display: flex; gap: 6px; align-items: center; }
+
+    .search {
+      width: 100%;
+      display: flex; gap: 8px; align-items: center;
+      background: rgba(15,23,42,0.85);
+      border: 1px solid rgba(148,163,184,0.35);
+      padding: 6px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+    .search input {
+      flex: 1;
+      border: 0; outline: none;
+      background: transparent;
+      color: var(--text-main);
+      font-size: 12px;
+    }
+
+    .phone-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+    .phone-card {
+      border-radius: 14px;
+      padding: 8px 10px;
+      background: linear-gradient(135deg, rgba(19,27,39,0.98), rgba(15,23,42,0.98));
+      border: 1px solid rgba(148,163,184,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-main);
+    }
+    .phone-card-main { display: flex; flex-direction: column; gap: 2px; }
+    .phone-card-label { font-weight: 500; color: var(--text-main); }
+    .phone-card-sub { color: var(--text-soft); font-size: 11px; }
+
+    .toggle {
+      position: relative;
+      width: 40px; height: 22px;
+      border-radius: 999px;
+      background: #111827;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      flex-shrink: 0;
+      border: none;
+    }
+    .toggle-circle {
+      position: absolute;
+      width: 18px; height: 18px;
+      border-radius: 999px;
+      background: #f9fafb;
+      top: 2px; left: 2px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+      transition: transform var(--transition-fast);
+    }
+    .toggle[data-on="true"] {
+      background: var(--accent);
+    }
+    .toggle[data-on="true"] .toggle-circle {
+      transform: translateX(18px);
+    }
+
+    .slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: #020617;
+      outline: none;
+      cursor: pointer;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #f9fafb;
+      box-shadow: 0 0 12px rgba(34,197,94,0.7);
+      border: 3px solid var(--accent);
+    }
+    .slider::-moz-range-thumb {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #f9fafb;
+      border: 3px solid var(--accent);
+    }
+
+    .meter {
+      width: 120px; height: 8px;
+      border-radius: 8px;
+      background: #020617;
+      position: relative;
+      overflow: hidden;
+    }
+    .meter-bar {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #facc15);
+    }
+
+    .inline-btn {
+      border: none; border-radius: 999px;
+      padding: 6px 12px; font-size: 11px;
+      cursor: pointer;
+      background: var(--accent);
+      color: #020617;
+      box-shadow: 0 6px 12px rgba(34,197,94,0.55);
+    }
+    .link-btn {
+      background: transparent; border: 0;
+      color: #93c5fd;
+      cursor: pointer;
+      font-size: 11px;
+      text-decoration: underline;
+      margin-left: 6px;
+    }
+
+    .phone-footer {
+      margin-top: auto;
+      display: flex; justify-content: center;
+      gap: 10px; font-size: 11px;
+      color: var(--text-soft);
+    }
+    .phone-dot {
+      width: 6px; height: 6px;
+      border-radius: 999px;
+      background: #4b5563;
+    }
+    .phone-dot.active {
+      width: 18px;
+      border-radius: 999px;
+      background: #e5e7eb;
+    }
+
+    /* Focus visible */
+    .btn:focus-visible,
+    .bubble-card:focus-visible,
+    .toggle:focus-visible,
+    .inline-btn:focus-visible,
+    .link-btn:focus-visible,
+    .auth-input:focus-visible,
+    .phone-card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 1024px) {
+      .app-shell {
+        height: auto;
+        grid-template-columns: 60px 1fr;
+      }
+      main {
+        grid-template-columns: minmax(0, 1.3fr) minmax(240px, 1fr);
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+      }
+      .sidebar {
+        flex-direction: row;
+        height: 60px;
+        justify-content: space-between;
+        padding: 10px 16px;
+      }
+      .side-nav, .side-bottom {
+        flex-direction: row;
+      }
+      .side-separator { display: none; }
+
+      .main {
+        padding: 14px;
+      }
+      main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .phone-column {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .tabs {
+        width: 100%;
+        overflow-x: auto;
+      }
+      .top-right {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== TOAST CONTAINER ========== -->
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ========== ÉCRAN DE CONNEXION ========== -->
+<section class="auth-wrapper" id="auth-wrapper" aria-label="Connexion">
+  <div class="auth-header">
+    <h2 class="auth-title">Connexion à SafeHouse</h2>
+    <p class="auth-subtitle">Identifie-toi pour accéder au tableau de bord sécurisé de ta maison.</p>
+    <div class="auth-badge">
+      <span class="auth-badge-dot"></span>
+      Compatible desktop &amp; mobile
+    </div>
+  </div>
+
+  <form class="auth-form" id="auth-form" autocomplete="on">
+    <div class="auth-field">
+      <label class="auth-label" for="auth-email">Adresse e-mail</label>
+      <input class="auth-input" id="auth-email" type="email" placeholder="ex. user@safehouse.com" required inputmode="email" />
+    </div>
+
+    <div class="auth-field">
+      <label class="auth-label" for="auth-password">Mot de passe</label>
+      <input class="auth-input" id="auth-password" type="password" placeholder="••••••••" required />
+      <button class="eye-btn" type="button" aria-label="Afficher/masquer le mot de passe" id="toggle-pwd">👁</button>
+    </div>
+
+    <div class="auth-footer-row">
+      <label class="auth-remember" for="remember-input">
+        <span class="auth-checkbox" id="remember-box">✔</span>
+        <input id="remember-input" type="checkbox" hidden aria-hidden="true" />
+        <span>Se souvenir de moi</span>
+      </label>
+      <span class="auth-link" id="forgot-link">Mot de passe oublié ?</span>
+    </div>
+
+    <button class="auth-button" type="submit">
+      Se connecter <span>➡️</span>
+    </button>
+
+    <p class="auth-error" id="auth-error">Identifiants incorrects. Essaie encore.</p>
+
+    <p class="auth-hint">
+      Pour la démo, utilise :
+      <strong>Email :</strong> <code>user@home.com</code> &nbsp; | &nbsp;
+      <strong>Mot de passe :</strong> <code>secret123</code>
+    </p>
+  </form>
+</section>
+
+<!-- ========== APP / DASHBOARD AVEC SIDEBAR ========== -->
+<div class="app" id="app" role="application" aria-label="Tableau de bord SafeHouse">
+  <div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo" aria-label="Logo SafeHouse">
+        <img src="WhatsApp Image 2025-11-19 at 23.10.26_78101741.jpg" alt="Logo SafeHouse">
+      </div>
+
+      <div class="side-nav">
+        <button class="side-btn active" title="Dashboard">🏠</button>
+        <button class="side-btn" title="Lumières">💡</button>
+        <button class="side-btn" title="Température">🌡️</button>
+        <button class="side-btn" title="Sécurité">🛡</button>
+        <button class="side-btn" title="Scénarios">⚙️</button>
+      </div>
+
+      <div class="side-separator"></div>
+
+      <div class="side-bottom">
+        <button class="side-btn" title="Paramètres">⚙️</button>
+        <button class="side-btn" title="Aide">?</button>
+      </div>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <div class="main">
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <div class="tabs">
+          <button class="tab active">Dashboard</button>
+          <button class="tab">Lumières</button>
+          <button class="tab">Température</button>
+          <button class="tab">Sécurité</button>
+          <button class="tab">Scénarios</button>
+        </div>
+
+        <div class="top-right">
+          <div class="chip" id="online-chip" aria-live="polite">
+            <span class="chip-dot"></span> Maison connectée en ligne
+          </div>
+          <button class="btn" id="theme-btn" title="Basculer mode sombre">🌙 Mode sombre</button>
+          <button class="btn" id="logout-btn" title="Se déconnecter">🔒 Déconnexion</button>
+          <button class="btn danger" id="reset-btn" title="Réinitialiser la démo">↺ Réinitialiser</button>
+        </div>
+      </div>
+
+      <!-- CONTENU PRINCIPAL -->
+      <main>
+        <div class="house-column">
+          <!-- Carte de bienvenue -->
+          <section class="greeting-card" aria-label="Résumé maison">
+            <div class="greeting-title">SAFEHOUSE – MAISON PROTÉGÉE</div>
+            <div class="greeting-sub">
+              Surveille et pilote ton domicile en temps réel, depuis n'importe où, avec SafeHouse.
+            </div>
+            <div class="greeting-badge">
+              <span class="dot"></span>
+              Maison familiale – 92&nbsp;m²
+            </div>
+          </section>
+
+          <!-- Carte maison 3D -->
+          <section class="house-card" aria-hidden="true">
+            <div class="house-illustration">
+              <div class="house-ground"></div>
+              <div class="house-body">
+                <div class="house-roof"></div>
+                <div class="house-garage"><div class="garage-door"></div></div>
+                <div class="house-main"></div>
+                <div class="house-balcony"></div>
+              </div>
+            </div>
+            <div class="house-caption">
+              <div class="house-caption-title">Maison synchronisée SafeHouse</div>
+              <div class="house-caption-sub">
+                Éclairage, sécurité, température et garage pilotés depuis ton smartphone.
+              </div>
+            </div>
+          </section>
+
+          <!-- Raccourcis modules -->
+          <nav class="bubbles" aria-label="Raccourcis vers les modules">
+            <button class="bubble-card" data-target="lights" aria-pressed="true">
+              <div class="bubble-icon">💡</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Éclairage</span>
+                <span class="bubble-sub">Salon &amp; cuisine allumés</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="climate" aria-pressed="false">
+              <div class="bubble-icon">🌡️</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Température</span>
+                <span class="bubble-sub">Confort 21&nbsp;°C</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="security" aria-pressed="false">
+              <div class="bubble-icon">🛡️</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Sécurité</span>
+                <span class="bubble-sub">Alarme activée</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="garage" aria-pressed="false">
+              <div class="bubble-icon">🚗</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Garage</span>
+                <span class="bubble-sub">Porte fermée</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="automation" aria-pressed="false">
+              <div class="bubble-icon">⚙️</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Scénarios</span>
+                <span class="bubble-sub">“Nuit” &amp; “Vacances” prêts</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="energy" aria-pressed="false">
+              <div class="bubble-icon">⚡</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Énergie</span>
+                <span class="bubble-sub">Suivi conso &amp; éco</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="watering" aria-pressed="false">
+              <div class="bubble-icon">🌿</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Arrosage</span>
+                <span class="bubble-sub">Seuil &amp; planning</span>
+              </div>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Colonne smartphone -->
+        <aside class="phone-column" aria-label="Contrôle smartphone">
+          <div class="phone-shell">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="phone-header">
+                <div>
+                  <div class="phone-title" id="phone-username">SafeHouse • Hamid</div>
+                  <div class="phone-header-sub">Dashboard principal</div>
+                </div>
+                <div class="phone-tools">
+                  <div class="phone-badge">
+                    <span class="phone-badge-dot"></span>
+                    En ligne
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recherche rapide -->
+              <div class="search" role="search">
+                🔎
+                <input id="phone-search" type="search" placeholder="Rechercher un appareil ou une option…" aria-label="Rechercher" />
+              </div>
+
+              <div class="phone-list" id="phone-list"></div>
+
+              <div class="phone-footer" aria-hidden="true">
+                <span class="phone-dot active"></span>
+                <span class="phone-dot"></span>
+                <span class="phone-dot"></span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   Utilitaires & stockage
+   ========================= */
+const AUTH_EMAIL = "user@home.com";
+const AUTH_PASSWORD = "secret123";
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+const storage = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch { return fallback; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  },
+  del(key) {
+    try { localStorage.removeItem(key); } catch {}
+  }
+};
+
+function toast(msg, type = "info", timeout = 3000) {
+  const wrap = $("#toasts");
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.innerHTML = `${type === "success" ? "✅" : type === "danger" ? "⚠️" : "ℹ️"} <span>${msg}</span>`;
+  wrap.appendChild(t);
+  const rm = () => { t.remove(); };
+  setTimeout(rm, timeout);
+  t.addEventListener("click", rm);
+}
+
+/* =========================
+   Thème
+   ========================= */
+const THEME_KEY = "smartHomeTheme";
+
+function updateThemeButtonLabel() {
+  const btn = $("#theme-btn");
+  if (!btn) return;
+  const cur = document.documentElement.getAttribute("data-theme");
+  if (cur === "dark") {
+    btn.textContent = "☀️ Mode clair";
+  } else {
+    btn.textContent = "🌙 Mode sombre";
+  }
+}
+
+function applyTheme(init = false) {
+  let theme = storage.get(THEME_KEY, "auto");
+  if (init && theme === "auto") {
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", prefersDark ? "dark" : "light");
+  } else {
+    document.documentElement.setAttribute("data-theme", theme === "auto" ? "light" : theme);
+  }
+  updateThemeButtonLabel();
+}
+
+applyTheme(true);
+
+$("#theme-btn")?.addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = (cur === "dark") ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  storage.set(THEME_KEY, next);
+  updateThemeButtonLabel();
+  toast(`Mode ${next === "dark" ? "sombre" : "clair"} activé`, "success");
+});
+
+/* =========================
+   Auth
+   ========================= */
+const authWrapper = $("#auth-wrapper");
+const authForm = $("#auth-form");
+const authError = $("#auth-error");
+const rememberBox = $("#remember-box");
+const rememberInput = $("#remember-input");
+const appRoot = $("#app");
+
+function showApp() { authWrapper.style.display = "none"; appRoot.style.display = "block"; }
+function showLogin() { authWrapper.style.display = "block"; appRoot.style.display = "none"; }
+
+rememberBox.addEventListener("click", () => {
+  rememberInput.checked = !rememberInput.checked;
+  rememberBox.textContent = rememberInput.checked ? "✔" : "";
+});
+
+$("#toggle-pwd").addEventListener("click", () => {
+  const pwd = $("#auth-password");
+  const isPwd = pwd.type === "password";
+  pwd.type = isPwd ? "text" : "password";
+});
+
+$("#forgot-link").addEventListener("click", () => {
+  toast("Indice : le mot de passe de démo est « secret123 » 😉", "info", 5000);
+});
+
+const isLogged = storage.get("smartHomeLogged", false) === true;
+if (isLogged) showApp(); else showLogin();
+
+authForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  authError.style.display = "none";
+  const email = $("#auth-email").value.trim();
+  const pwdInput = $("#auth-password");
+  const pwd = pwdInput.value.trim();
+  if (email === AUTH_EMAIL && pwd === AUTH_PASSWORD) {
+    if (rememberInput.checked) storage.set("smartHomeLogged", true);
+    showApp();
+    toast("Connexion réussie !", "success");
+    pwdInput.value = "";
+  } else {
+    authError.style.display = "block";
+    pwdInput.value = "";
+    pwdInput.focus();
+  }
+});
+
+$("#logout-btn").addEventListener("click", () => {
+  storage.del("smartHomeLogged");
+  toast("Déconnecté.", "info");
+  showLogin();
+});
+
+$("#reset-btn").addEventListener("click", () => {
+  ["smartHomeLogged","smartHomeState","smartHomeTheme"].forEach(k => storage.del(k));
+  toast("Données de la démo réinitialisées.", "success");
+  location.reload();
+});
+
+/* =========================
+   Vues & états persistants
+   ========================= */
+const state = storage.get("smartHomeState", {});
+
+function getState(id, fallback) {
+  return (id in state) ? state[id] : fallback;
+}
+function setState(id, value) {
+  state[id] = value;
+  storage.set("smartHomeState", state);
+}
+
+const views = {
+  lights: [
+    { id: "living-light", label: "Lumières salon", sub: "Intensité 80 %", type: "toggle", defaultOn: true },
+    { id: "kitchen-light", label: "Lumières cuisine", sub: "Intensité 60 %", type: "toggle", defaultOn: true },
+    { id: "garden-light", label: "Éclairage extérieur", sub: "Programmation coucher du soleil", type: "toggle", defaultOn: false },
+  ],
+  climate: [
+    { id: "temp", label: "Thermostat principal", sub: "Réglage actuel : {{value}} °C", type: "slider", min: 16, max: 28, value: 21 },
+    { id: "eco-mode", label: "Mode éco", sub: "Réduction automatique la nuit", type: "toggle", defaultOn: true },
+  ],
+  security: [
+    { id: "alarm", label: "Système d’alarme", sub: "Zones : portes &amp; fenêtres", type: "toggle", defaultOn: true },
+    { id: "camera", label: "Caméras extérieures", sub: "Enregistrement en continu", type: "toggle", defaultOn: true },
+    { id: "notification", label: "Notifications instantanées", sub: "En cas de détection de mouvement", type: "toggle", defaultOn: true },
+  ],
+  garage: [
+    { id: "garage-door", label: "Porte de garage", sub: "Appuie pour ouvrir/fermer", type: "toggle", defaultOn: false },
+    { id: "garage-light", label: "Lumière garage", sub: "S’éteint automatiquement", type: "toggle", defaultOn: false },
+  ],
+  automation: [
+    { id: "scene-night", label: "Scénario “Bonne nuit”", sub: "Éteint lumières, active alarme", type: "button", buttonLabel: "Lancer" },
+    { id: "scene-away", label: "Scénario “Vacances”", sub: "Simulation de présence + sécurité", type: "button", buttonLabel: "Activer" },
+  ],
+  energy: [
+    { id: "energy-meter", label: "Consommation actuelle", sub: "Charge : {{value}} %", type: "meter", value: 42 },
+    { id: "energy-eco", label: "Mode économie d’énergie", sub: "Optimisation intelligente", type: "toggle", defaultOn: true },
+    { id: "ev-charge", label: "Recharge véhicule électrique", sub: "Privilégier heures creuses", type: "toggle", defaultOn: false },
+  ],
+  watering: [
+    { id: "watering-main", label: "Arrosage jardin", sub: "Cycle automatique (tôt le matin)", type: "toggle", defaultOn: false },
+    { id: "soil-threshold", label: "Seuil d’humidité", sub: "Déclenchement à {{value}} %", type: "slider", min: 10, max: 80, value: 35 },
+    { id: "watering-plan", label: "Planification", sub: "Programmer un cycle", type: "button", buttonLabel: "Planifier" },
+  ],
+};
+
+const phoneList = $("#phone-list");
+const phoneSearch = $("#phone-search");
+let currentView = "lights";
+const scheduledTimers = [];
+let energyMeterInterval = null;
+
+/* Création d’une carte dans la liste téléphone */
+function createCard(item) {
+  const card = document.createElement("div");
+  card.className = "phone-card";
+  card.tabIndex = 0;
+
+  const main = document.createElement("div");
+  main.className = "phone-card-main";
+
+  const valueForSub = (item.type === "slider") ? getState(item.id, item.value) : null;
+  const subText = item.sub ? item.sub.replace("{{value}}", valueForSub ?? "") : "";
+
+  const label = document.createElement("div");
+  label.className = "phone-card-label";
+  label.textContent = item.label;
+
+  const sub = document.createElement("div");
+  sub.className = "phone-card-sub";
+  sub.innerHTML = subText;
+
+  main.appendChild(label);
+  main.appendChild(sub);
+
+  const right = document.createElement("div");
+
+  if (item.type === "toggle") {
+    const initial = getState(item.id, item.defaultOn === true);
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "toggle";
+    toggle.setAttribute("data-on", String(initial));
+    toggle.setAttribute("role", "switch");
+    toggle.setAttribute("aria-checked", String(initial));
+    toggle.setAttribute("aria-label", item.label);
+    toggle.innerHTML = `<span class="toggle-circle"></span>`;
+    const setToggle = (on) => {
+      toggle.setAttribute("data-on", String(on));
+      toggle.setAttribute("aria-checked", String(on));
+      setState(item.id, on);
+    };
+    toggle.addEventListener("click", () => setToggle(!(toggle.getAttribute("data-on") === "true")));
+    toggle.addEventListener("keydown", (e) => {
+      if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle.click(); }
+    });
+    right.appendChild(toggle);
+  }
+
+  if (item.type === "slider") {
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.className = "slider";
+    slider.min = item.min;
+    slider.max = item.max;
+    slider.value = getState(item.id, item.value);
+    slider.setAttribute("aria-label", item.label);
+    slider.addEventListener("input", () => {
+      sub.innerHTML = item.sub.replace("{{value}}", slider.value);
+    });
+    slider.addEventListener("change", () => {
+      setState(item.id, Number(slider.value));
+      toast(`${item.label} : ${slider.value}`, "info", 1500);
+    });
+    right.style.minWidth = "90px";
+    right.appendChild(slider);
+    sub.innerHTML = item.sub.replace("{{value}}", slider.value);
+  }
+
+  if (item.type === "button") {
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = "inline-btn";
+    btn.textContent = item.buttonLabel;
+    btn.addEventListener("click", () => triggerScenario(item.label));
+    right.appendChild(btn);
+
+    const plan = document.createElement("button");
+    plan.type = "button"; plan.className = "link-btn";
+    plan.textContent = "⏱ Planifier";
+    plan.addEventListener("click", () => scheduleScenario(item.label));
+    right.appendChild(plan);
+  }
+
+  if (item.type === "meter") {
+    const meter = document.createElement("div");
+    meter.className = "meter";
+    const bar = document.createElement("div");
+    bar.className = "meter-bar";
+    meter.appendChild(bar);
+    right.style.minWidth = "130px";
+    right.appendChild(meter);
+
+    const setVal = (v) => {
+      const val = Math.max(0, Math.min(100, v));
+      bar.style.width = val + "%";
+      sub.textContent = `Charge : ${val.toFixed(0)}%`;
+      setState(item.id, val);
+    };
+    setVal(getState(item.id, item.value));
+
+    if (energyMeterInterval) clearInterval(energyMeterInterval);
+    let dir = 1;
+    energyMeterInterval = setInterval(() => {
+      let cur = getState(item.id, item.value);
+      cur += dir * (Math.random() * 2);
+      if (cur > 85) dir = -1;
+      if (cur < 15) dir = 1;
+      setVal(cur);
+    }, 2500);
+  }
+
+  card.appendChild(main);
+  card.appendChild(right);
+
+  card.dataset.search = (item.label + " " + (sub.textContent || sub.innerText)).toLowerCase();
+  return card;
+}
+
+/* Rendu d’une vue dans le téléphone */
+function renderView(viewKey) {
+  currentView = viewKey;
+  const items = views[viewKey] || [];
+  phoneList.innerHTML = "";
+  items.forEach(item => phoneList.appendChild(createCard(item)));
+  applySearchFilter();
+}
+
+function applySearchFilter() {
+  const q = phoneSearch.value.trim().toLowerCase();
+  $$(".phone-card", phoneList).forEach(card => {
+    card.style.display = q && !card.dataset.search.includes(q) ? "none" : "";
+  });
+}
+
+phoneSearch.addEventListener("input", applySearchFilter);
+
+/* Scénarios */
+function triggerScenario(label) {
+  if (label.includes("Nuit")) {
+    setState("living-light", false);
+    setState("kitchen-light", false);
+    setState("alarm", true);
+    toast("Scénario « Bonne nuit » exécuté : lumières éteintes, alarme activée.", "success", 4000);
+  } else if (label.includes("Vacances")) {
+    setState("notification", true);
+    setState("camera", true);
+    toast("Scénario « Vacances » : simulation de présence et sécurité renforcée.", "success", 4000);
+  } else {
+    toast(`Scénario « ${label} » déclenché ✅`, "success");
+  }
+  renderView(currentView);
+}
+
+function scheduleScenario(label) {
+  const minutes = prompt("Dans combien de minutes exécuter ce scénario ?", "2");
+  if (!minutes) return;
+  const m = Number(minutes);
+  if (Number.isNaN(m) || m <= 0) {
+    toast("Valeur invalide.", "danger");
+    return;
+  }
+  const when = new Date(Date.now() + m * 60 * 1000);
+  toast(`« ${label} » planifié pour ${when.toLocaleTimeString()}`, "info", 5000);
+  const t = setTimeout(() => {
+    triggerScenario(label);
+    const idx = scheduledTimers.findIndex(x => x.t === t);
+    if (idx >= 0) scheduledTimers.splice(idx, 1);
+  }, m * 60 * 1000);
+  scheduledTimers.push({ label, when, t });
+}
+
+/* Animation de statut en ligne / veille */
+(function fakeOnlinePulse() {
+  const chip = $("#online-chip");
+  if (!chip) return;
+  let online = true;
+  setInterval(() => {
+    online = !online;
+    chip.innerHTML = `<span class="chip-dot" style="background:${online ? 'var(--accent)' : '#f59e0b'}"></span> ${online ? 'Maison connectée en ligne' : 'Maison en veille'}`;
+  }, 12000);
+})();
+
+/* Navigation par bulles */
+renderView("lights");
+
+$$(".bubble-card").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.getAttribute("data-target");
+    renderView(target);
+    $$(".bubble-card").forEach(b => b.setAttribute("aria-pressed", "false"));
+    btn.setAttribute("aria-pressed", "true");
+  });
+  btn.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      btn.click();
+    }
+  });
+});
+
+/* Raccourci clavier : Ctrl/Cmd + K -> focus recherche */
+window.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault();
+    phoneSearch.focus();
+  }
+});
+
+/* Click sur la carte = toggle si présent */
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".phone-card");
+  if (!card) return;
+  const toggle = card.querySelector(".toggle");
+  if (toggle && (e.target === card || e.target.closest(".phone-card-main"))) {
+    toggle.click();
+  }
+});
+</script>
+</body>
+</html>
