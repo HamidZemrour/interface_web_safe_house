@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="auto">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeHouse – Interface Web</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+
+  <!-- Police -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"> 
+
+  <!-- CSS externe -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ========= LOGO GLOBAL ========= -->
+<div class="page-logo">
+  <div class="page-logo-inner">
+    <img src="WhatsApp Image 2025-11-19 at 23.10.26_78101741.jpg" alt="Logo SafeHouse">
+    <span>SafeHouse</span>
+  </div>
+</div>
+<!-- ========== TOAST CONTAINER ========== -->
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ========== ÉCRAN DE CONNEXION ========== -->
+<section class="auth-wrapper" id="auth-wrapper" aria-label="Connexion">
+  <div class="auth-header">
+    <h2 class="auth-title">Connexion à SafeHouse</h2>
+    <p class="auth-subtitle">Identifie-toi pour accéder au tableau de bord sécurisé de ta maison.</p>
+    <div class="auth-badge">
+      <span class="auth-badge-dot"></span>
+      Compatible desktop &amp; mobile
+    </div>
+  </div>
+
+  <form class="auth-form" id="auth-form" autocomplete="on">
+    <div class="auth-field">
+      <label class="auth-label" for="auth-email">Adresse e-mail</label>
+      <input class="auth-input" id="auth-email" type="email" placeholder="ex. user@home.com" required inputmode="email" />
+    </div>
+
+    <div class="auth-field">
+      <label class="auth-label" for="auth-password">Mot de passe</label>
+      <input class="auth-input" id="auth-password" type="password" placeholder="••••••••" required />
+      <button class="eye-btn" type="button" aria-label="Afficher/masquer le mot de passe" id="toggle-pwd">👁</button>
+    </div>
+
+    <div class="auth-footer-row">
+      <label class="auth-remember" for="remember-input">
+        <span class="auth-checkbox" id="remember-box">✔</span>
+        <input id="remember-input" type="checkbox" hidden aria-hidden="true" />
+        <span>Se souvenir de moi</span>
+      </label>
+      <span class="auth-link" id="forgot-link">Mot de passe oublié ?</span>
+    </div>
+
+    <button class="auth-button" type="submit">
+      Se connecter <span>➡️</span>
+    </button>
+
+    <p class="auth-error" id="auth-error">Identifiants incorrects. Essaie encore.</p>
+
+    <p class="auth-hint">
+      Pour la première connexion, utilise :
+      <strong>Email :</strong> <code>user@home.com</code> &nbsp; | &nbsp;
+      <strong>Mot de passe :</strong> <code>secret123</code> (tu pourras le modifier ensuite)
+    </p>
+  </form>
+</section>
+
+<!-- ========= MODALE MOT DE PASSE (création / changement) ========= -->
+<div class="modal-overlay" id="pwd-modal">
+  <div class="modal">
+    <h3 id="pwd-title">Créer votre mot de passe</h3>
+    <p id="pwd-subtitle">Définissez un mot de passe pour sécuriser SafeHouse.</p>
+
+    <form id="pwd-form">
+      <div id="pwd-current-wrapper" style="display:none; margin-bottom:10px;">
+        <label class="auth-label" for="pwd-current">Mot de passe actuel</label>
+        <input class="auth-input" id="pwd-current" type="password">
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label class="auth-label" for="pwd-new">Nouveau mot de passe</label>
+        <input class="auth-input" id="pwd-new" type="password" required>
+      </div>
+
+      <div>
+        <label class="auth-label" for="pwd-confirm">Confirmer</label>
+        <input class="auth-input" id="pwd-confirm" type="password" required>
+      </div>
+
+      <p class="modal-error" id="pwd-error"></p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-top" id="pwd-skip">Plus tard</button>
+        <button type="submit" class="auth-button" style="width:auto;">Valider</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ========== APP / DASHBOARD AVEC SIDEBAR ========== -->
+<div class="app" id="app" role="application" aria-label="Tableau de bord SafeHouse">
+  <div class="app-shell">
+    <!-- ========= BOUTONS GLOBAL TOP RIGHT ========= -->
+<div class="page-top-right">
+  <div class="chip-top" id="online-chip-top">
+    <span class="chip-top-dot"></span>
+    Maison connectée
+  </div>
+  <button class="btn-top" id="theme-btn">🌙 Mode sombre</button>
+  <button class="btn-top" id="logout-btn">Déconnexion</button>
+  <button class="btn-top danger" id="reset-btn">Réinitialiser</button>
+</div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo" aria-label="Logo SafeHouse">
+        <img src="WhatsApp Image 2025-11-19 at 23.10.26_78101741.jpg" alt="Logo SafeHouse">
+      </div>
+
+      
+      </div>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <div class="main">
+      <!-- TOPBAR (juste les onglets, les boutons sont global en haut de page) -->
+      <div class="topbar">
+        <div class="tabs">
+          <button class="tab active">Dashboard</button>
+          <button class="tab">Lumières</button>
+          <button class="tab">Température</button>
+          <button class="tab">Sécurité</button>
+          <button class="tab">Scénarios</button>
+        </div>
+      </div>
+
+      <!-- CONTENU PRINCIPAL -->
+      <main>
+        <div class="house-column">
+          <!-- Carte de bienvenue -->
+          <section class="greeting-card" aria-label="Résumé maison">
+            <div class="greeting-title">SAFEHOUSE – MAISON PROTÉGÉE</div>
+            <div class="greeting-sub">
+              Surveille et pilote ton domicile en temps réel, depuis n'importe où, avec SafeHouse.
+            </div>
+            <div class="greeting-badge">
+              <span class="dot"></span>
+              Maison familiale – 92&nbsp;m²
+            </div>
+          </section>
+
+          <!-- Carte maison 3D -->
+          <section class="house-card" aria-hidden="true">
+            <div class="house-illustration">
+              <div class="house-ground"></div>
+              <div class="house-body">
+                <div class="house-roof"></div>
+                <div class="house-garage"><div class="garage-door"></div></div>
+                <div class="house-main"></div>
+                <div class="house-balcony"></div>
+              </div>
+            </div>
+            <div class="house-caption">
+              <div class="house-caption-title">Maison synchronisée SafeHouse</div>
+              <div class="house-caption-sub">
+                Éclairage, sécurité, température et garage pilotés depuis ton smartphone.
+              </div>
+            </div>
+          </section>
+
+          <!-- Raccourcis modules -->
+          <nav class="bubbles" aria-label="Raccourcis vers les modules">
+            <button class="bubble-card" data-target="lights" aria-pressed="true">
+              <div class="bubble-icon">💡</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Éclairage</span>
+                <span class="bubble-sub">Salon &amp; cuisine allumés</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="climate" aria-pressed="false">
+              <div class="bubble-icon">🌡️</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Température</span>
+                <span class="bubble-sub">Confort 21&nbsp;°C</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="security" aria-pressed="false">
+              <div class="bubble-icon">🛡️</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Sécurité</span>
+                <span class="bubble-sub">Alarme + caméras actives</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="garage" aria-pressed="false">
+              <div class="bubble-icon">🚗</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Garage</span>
+                <span class="bubble-sub">Porte fermée</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="automation" aria-pressed="false">
+              <div class="bubble-icon">⚙️</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Scénarios</span>
+                <span class="bubble-sub">“Nuit” &amp; “Vacances”</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="energy" aria-pressed="false">
+              <div class="bubble-icon">⚡</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Énergie</span>
+                <span class="bubble-sub">Suivi consommation</span>
+              </div>
+            </button>
+
+            <button class="bubble-card" data-target="watering" aria-pressed="false">
+              <div class="bubble-icon">🌿</div>
+              <div class="bubble-content">
+                <span class="bubble-title">Arrosage</span>
+                <span class="bubble-sub">Seuil &amp; planning</span>
+              </div>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Colonne smartphone -->
+        <aside class="phone-column" aria-label="Contrôle smartphone">
+          <div class="phone-shell">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="phone-header">
+                <div>
+                  <div class="phone-title" id="phone-username">SafeHouse • Hamid</div>
+                  <div class="phone-header-sub">Dashboard principal</div>
+                </div>
+                <div class="phone-tools">
+                  <div class="phone-badge">
+                    <span class="phone-badge-dot"></span>
+                    En ligne
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recherche rapide -->
+              <div class="search" role="search">
+                🔎
+                <input id="phone-search" type="search" placeholder="Rechercher un appareil ou une option…" aria-label="Rechercher" />
+              </div>
+
+              <div class="phone-list" id="phone-list"></div>
+
+              <div class="phone-footer" aria-hidden="true">
+                <span class="phone-dot active"></span>
+                <span class="phone-dot"></span>
+                <span class="phone-dot"></span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- JS externe -->
+<script src="app.js"></script>
+</body>
+</html>
