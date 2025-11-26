@@ -194,16 +194,16 @@ $("#reset-btn").addEventListener("click", () => {
   location.reload();
 });
 
-/* ========= Animation statut Maison connectée ========= */
-(function(){
-  const chip = $("#online-chip-top");
-  if (!chip) return;
-  let online = true;
-  setInterval(() => {
-    online = !online;
-    chip.innerHTML = `<span class="chip-top-dot" style="background:${online ? '#22c55e' : '#f59e0b'}"></span>${online ? " Maison connectée" : " Maison en veille"}`;
-  }, 12000);
-})();
+// /* ========= Animation statut Maison connectée ========= */
+// (function(){
+//   const chip = $("#online-chip-top");
+//   if (!chip) return;
+//   let online = true;
+//   setInterval(() => {
+//     online = !online;
+//     chip.innerHTML = `<span class="chip-top-dot" style="background:${online ? '#22c55e' : '#f59e0b'}"></span>${online ? " Maison connectée" : " Maison en veille"}`;
+//   }, 12000);
+// })();
 
 /* ========= État de l’app / vues ========= */
 const state = storage.get("smartHomeState", {});
