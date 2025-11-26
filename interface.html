@@ -1406,16 +1406,16 @@ function scheduleScenario(label) {
   scheduledTimers.push({ label, when, t });
 }
 
-/* Animation de statut en ligne / veille */
-(function fakeOnlinePulse() {
-  const chip = $("#online-chip");
-  if (!chip) return;
-  let online = true;
-  setInterval(() => {
-    online = !online;
-    chip.innerHTML = `<span class="chip-dot" style="background:${online ? 'var(--accent)' : '#f59e0b'}"></span> ${online ? 'Maison connectée en ligne' : 'Maison en veille'}`;
-  }, 12000);
-})();
+// /* Animation de statut en ligne / veille */
+// (function fakeOnlinePulse() {
+//   const chip = $("#online-chip");
+//   if (!chip) return;
+//   let online = true;
+//   setInterval(() => {
+//     online = !online;
+//     chip.innerHTML = `<span class="chip-dot" style="background:${online ? 'var(--accent)' : '#f59e0b'}"></span> ${online ? 'Maison connectée en ligne' : 'Maison en veille'}`;
+//   }, 12000);
+// })();
 
 /* Navigation par bulles */
 renderView("lights");
